@@ -10,13 +10,16 @@ import os
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument('-d','--dHour', help="duration of the capture (hour)", type=int)
+    p.add_argument('-d','--dHour', help="duration of the capture (hour)", type=int, default=10)
     p.add_argument('-i','--interval', help="capture interval time(sec) >3 sec", type=int, default=60)
     args = p.parse_args()
-    GPIO.setmode(GPIO.BOARD)
-    GPIO.setup(10,GPIO.OUT)
+    POW_PIN=16
+    SV1=19
+    SV2=26
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(POW_PIN,GPIO.OUT)
 #    print args.endHour
-    GPIO.output(10,True)
+    GPIO.output(POW_PIN,True)
     dirname = datetime.date.today().strftime("%y%m%d")
     stopTime = datetime.datetime.now() + datetime.timedelta(hours=args.dHour)
     try:
@@ -28,12 +31,13 @@ if __name__ == "__main__":
             for i, filename in enumerate(camera.capture_continuous(dirname+'/im{timestamp:%H%M%S}-{counter:03d}.jpg')):
                 print(filename)
                 time.sleep(3)
-                GPIO.output(10,False)
+                GPIO.output(POW_PIN,False)
                 nowTime = datetime.datetime.now()
-                if stopTime-nowTime > 0:
+                t_delta = stopTime-nowTime
+                if t_delta.seconds > 0:
                     break
                 time.sleep(args.interval-6)
-                GPIO.output(10,True)
+                GPIO.output(POW_PIN,True)
                 time.sleep(3)
         finally:
             pass
